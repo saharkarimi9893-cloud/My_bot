@@ -42,7 +42,7 @@ async def handler(event):
     sender = await event.get_sender()
     if sender and sender.username in ALLOWED_ADMINS:
         try:
-            await client(SendReactionRequest(
+             client(SendReactionRequest(
                 peer=event.chat_id, msg_id=event.id,
                 reaction=[ReactionEmoji(emoticon=REACTIONS[current_index])]
             ))
