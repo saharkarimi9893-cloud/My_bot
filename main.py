@@ -1,47 +1,56 @@
-import asyncio, os
+import os
+import telebot
 from flask import Flask
 from threading import Thread
-from telethon import TelegramClient, events
-from telethon.tl.functions.messages import SendReactionRequest
-from telethon.tl.types import ReactionEmoji
 
-# تنظیمات شما
-API_ID = 2040
-API_HASH = "b18441a1ff607e10a989891a5462e627"
-BOT_TOKEN = "8335322668:AAFFUKKmKzAOrbPz9bhl1wEjy48SCxaI0Eg"
+# دریافت توکن از تنظیمات رندر (Environment Variables)
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+
+# لیست ادمین‌های مجاز (یوزرنیم بدون @)
 ALLOWED_ADMINS = ['OYB1234', 'sahar143']
+
+# لیست ری‌اکشن‌ها برای چرخش خودکار
 REACTIONS = ['⚡', '❤️‍🔥', '💯']
 current_index = 0
 
-# وب‌سرور برای زنده ماندن در رندر
+# راه‌اندازی ربات
+bot = telebot.TeleBot(BOT_TOKEN)
+
+# ساخت یک وب‌سرور ساده برای آنلاین نگه داشتن ربات در رندر
 app = Flask(__name__)
+
 @app.route('/')
-def home(): return "Bot is Alive!", 200
+def home():
+    return "Bot is Alive and Running!", 200
 
 def run_flask():
+    # رندر پورت را خودکار اختصاص می‌دهد
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
 
-client = TelegramClient('bot_session', API_ID, API_HASH)
-
-@client.on(events.NewMessage)
-async def handler(event):
+# هندلر برای شناسایی پیام‌های جدید و زدن ری‌اکشن
+@bot.message_handler(func=lambda message: True)
+def handle_messages(message):
     global current_index
     try:
-        sender = await event.get_sender()
-        if sender and hasattr(sender, 'username') and sender.username in ALLOWED_ADMINS:
-            await client(SendReactionRequest(
-                peer=event.chat_id, msg_id=event.id,
-                reaction=[ReactionEmoji(emoticon=REACTIONS[current_index])]
-            ))
+        # چک کردن اینکه فرستنده پیام ادمین است یا خیر
+        if message.from_user and message.from_user.username in ALLOWED_ADMINS:
+            # ارسال ری‌اکشن به پیام ادمین
+            bot.set_message_reaction(
+                chat_id=message.chat.id,
+                message_id=message.message_id,
+                reaction=[telebot.types.ReactionTypeEmoji(REACTIONS[current_index])]
+            )
+            # تغییر ری‌اکشن برای پیام بعدی
             current_index = (current_index + 1) % len(REACTIONS)
-    except: pass
-
-async def main():
-    Thread(target=run_flask, daemon=True).start()
-    await client.start(bot_token=BOT_TOKEN)
-    print("🚀 Robot is Online!")
-    await client.run_until_disconnected()
+            print(f"Reaction {REACTIONS[current_index-1]} sent successfully!")
+    except Exception as e:
+        print(f"Error in reaction: {e}")
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    # ۱. اجرای وب‌سرور در یک رشته (Thread) جداگانه
+    Thread(target=run_flask, daemon=True).start()
+    
+    # ۲. اجرای اصلی ربات
+    print("🚀 Robot is Online and waiting for messages...")
+    bot.infinity_polling()
