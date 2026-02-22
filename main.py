@@ -1,9 +1,8 @@
-import os
-import telebot
+import os, telebot
 from flask import Flask
 from threading import Thread
 
-# تنظیمات ربات
+# تنظیمات اصلی
 BOT_TOKEN = "8335322668:AAF5Nhwo60k6NDPjU_KgTskcPU4A-UvRiaw"
 ALLOWED_ADMINS = ['OYB1234', 'sahar143']
 REACTIONS = ['⚡', '❤️‍🔥', '💯']
@@ -13,25 +12,20 @@ bot = telebot.TeleBot(BOT_TOKEN)
 app = Flask(__name__)
 
 @app.route('/')
-def home():
-    return "Bot is Active!", 200
+def home(): return "Bot is Alive!", 200
 
-def run_flask():
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
-
-# --- اصلاح خط ۲۵: لیست کامل انواع محتوا ---
+# --- اصلاح خط ۲۴: لیست کامل انواع محتوا برای ری‌اکت زدن ---
 ALL_TYPES =
 
-# هندلر برای کانال و گروه‌ها
 @bot.channel_post_handler(content_types=ALL_TYPES)
-@bot.message_handler(content_types=ALL_TYPES, func=lambda message: True)
-def handle_all_messages(message):
+@bot.message_handler(content_types=ALL_TYPES)
+def handle_messages(message):
     global current_index
     try:
         user = message.from_user.username if message.from_user else None
         is_admin = user and user.lower() in [admin.lower() for admin in ALLOWED_ADMINS]
         
+        # ری‌اکت در کانال یا برای ادمین‌های لیست شده
         if message.chat.type == 'channel' or is_admin:
             bot.set_message_reaction(
                 chat_id=message.chat.id,
@@ -39,14 +33,17 @@ def handle_all_messages(message):
                 reaction=[telebot.types.ReactionTypeEmoji(REACTIONS[current_index])]
             )
             current_index = (current_index + 1) % len(REACTIONS)
-            print(f"✅ Reacted to {message.content_type}")
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
 
 if __name__ == '__main__':
-    # برای رفع خطای Conflict، اول اتصال‌های قبلی را قطع می‌کنیم
+    # رفع مشکل Conflict (تداخل) با نسخه‌های قبلی
     bot.remove_webhook()
     
-    Thread(target=run_flask, daemon=True).start()
-    print("🚀 Robot is starting...")
-    bot.infinity_polling(timeout=10, long_polling_timeout=5)
+    # اجرای وب‌سرور روی پورت رندر
+    port = int(os.environ.get("PORT", 10000))
+    Thread(target=lambda: app.run(host='0.0.0.0', port=port)).start()
+    
+    # شروع کار ربات
+    print("🚀 Robot is monitoring EVERYTHING now!")
+    bot.infinity_polling(timeout=20, long_polling_timeout=10)
