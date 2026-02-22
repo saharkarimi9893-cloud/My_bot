@@ -17,14 +17,13 @@ def home():
     return "Bot is Active!", 200
 
 def run_flask():
-    # استفاده از پورت محیطی رندر
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
 
-# لیست کامل تمام محتواها (رفع خطای خط 24 تصویر)
+# --- اصلاح خط ۲۵: لیست کامل انواع محتوا ---
 ALL_TYPES =
 
-# هندلر برای کانال و گروه‌ها با پوشش تمام محتواها
+# هندلر برای کانال و گروه‌ها
 @bot.channel_post_handler(content_types=ALL_TYPES)
 @bot.message_handler(content_types=ALL_TYPES, func=lambda message: True)
 def handle_all_messages(message):
@@ -33,7 +32,6 @@ def handle_all_messages(message):
         user = message.from_user.username if message.from_user else None
         is_admin = user and user.lower() in [admin.lower() for admin in ALLOWED_ADMINS]
         
-        # ری‌اکت روی پست کانال یا پیام ادمین در گروه
         if message.chat.type == 'channel' or is_admin:
             bot.set_message_reaction(
                 chat_id=message.chat.id,
@@ -46,7 +44,9 @@ def handle_all_messages(message):
         print(f"❌ Error: {e}")
 
 if __name__ == '__main__':
-    # اجرای همزمان سرور و ربات
+    # برای رفع خطای Conflict، اول اتصال‌های قبلی را قطع می‌کنیم
+    bot.remove_webhook()
+    
     Thread(target=run_flask, daemon=True).start()
-    print("🚀 Robot is monitoring EVERYTHING...")
-    bot.infinity_polling()
+    print("🚀 Robot is starting...")
+    bot.infinity_polling(timeout=10, long_polling_timeout=5)
