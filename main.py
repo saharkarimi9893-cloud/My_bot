@@ -2,24 +2,25 @@ import os
 import telebot
 from flask import Flask, request
 
-# تنظیمات (توکن و آدرس خود را چک کنید)
+# تنظیمات نهایی با آدرس صحیح شما
 BOT_TOKEN = "8335322668:AAF5Nhwo60k6NDPjU_KgTskcPU4A-UvRiaw"
-RENDER_URL = "https://my-bot-hrqm.onrender.com"
-
-# نکته: threaded=False برای پایداری در پلن رایگان رندر
-bot = telebot.TeleBot(BOT_TOKEN, threaded=False)
-app = Flask(__name__)
+RENDER_URL = "https://my-bot-hrqm.onrender.com" 
 
 ALLOWED_ADMINS = ['sahar143', 'OYB1234']
 REACTIONS = ['⚡', '❤️‍🔥', '💯', '🔥', '💎']
 current_index = 0
-ALL_TYPES =
+
+bot = telebot.TeleBot(BOT_TOKEN)
+app = Flask(__name__)
+
+# لیست کامل محتواها طبق درخواست شما
+ALL_TYPES = ['photo', 'video', 'sticker', 'audio', 'animation', 'text', 'voice', 'video_note']
 
 @app.route('/')
-def home(): return "Bot is Alive!", 200
+def home(): 
+    return "Bot is Active!", 200
 
-# مسیر ایمن برای وب‌هوک
-@app.route('/webhook', methods=['POST'])
+@app.route('/' + BOT_TOKEN, methods=['POST'])
 def get_message():
     if request.headers.get('content-type') == 'application/json':
         json_string = request.get_data().decode('utf-8')
@@ -35,6 +36,8 @@ def handle_messages(message):
     try:
         user = message.from_user.username if message.from_user else None
         is_admin = user and user.lower() in [admin.lower() for admin in ALLOWED_ADMINS]
+
+        # ری‌اکشن روی تمام پست‌های کانال و ادمین‌ها
         if message.chat.type == 'channel' or is_admin:
             bot.set_message_reaction(
                 chat_id=message.chat.id,
@@ -42,13 +45,13 @@ def handle_messages(message):
                 reaction=[telebot.types.ReactionTypeEmoji(REACTIONS[current_index])]
             )
             current_index = (current_index + 1) % len(REACTIONS)
-    except Exception as e: print(f"Error: {e}")
+    except Exception as e:
+        print(f"Error: {e}")
 
 if __name__ == '__main__':
-    # ریست کردن وب‌هوک برای اطمینان
+    # تنظیم وب‌هوک روی آدرس رندر
     bot.remove_webhook()
-    # آدرس وب‌هوک باید دقیقا به /webhook ختم شود
-    bot.set_webhook(url=f"{RENDER_URL}/webhook")
+    bot.set_webhook(url=RENDER_URL + '/' + BOT_TOKEN)
     
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
