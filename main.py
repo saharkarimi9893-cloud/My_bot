@@ -2,7 +2,7 @@ import os
 import telebot
 from flask import Flask, request
 
-# 1. تنظیمات اصلی (آدرس رندر خود را در خط زیر جایگزین کنید)
+# ۱۰ # تنظیمات (آدرس رندر خود را در خط زیر جایگزین کنید)
 BOT_TOKEN = "8335322668:AAF5Nhwo60k6NDPjU_KgTskcPU4A-UvRiaw"
 RENDER_URL = "https://your-app-name.onrender.com" 
 
@@ -13,11 +13,12 @@ current_index = 0
 bot = telebot.TeleBot(BOT_TOKEN)
 app = Flask(__name__)
 
-# 2. لیست تمام محتواها (یکپارچه شده طبق درخواست شما)
-ALL_TYPES =
+# ۲۰ # لیست محتواها دقیقاً طبق درخواست شما یکپارچه و اصلاح شده
+ALL_TYPES = ['photo', 'video', 'sticker', 'audio', 'animation', 'text', 'voice', 'video_note']
 
 @app.route('/')
-def home(): return "Bot is Alive!", 200
+def home():
+    return "Bot is Alive!", 200
 
 @app.route('/' + BOT_TOKEN, methods=['POST'])
 def get_message():
@@ -28,7 +29,6 @@ def get_message():
         return "!", 200
     return "Forbidden", 403
 
-# 3. بخش اصلی ری‌اکشن زدن
 @bot.channel_post_handler(content_types=ALL_TYPES)
 @bot.message_handler(content_types=ALL_TYPES)
 def handle_messages(message):
