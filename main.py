@@ -7,7 +7,7 @@ BOT_TOKEN = "8335322668:AAF5Nhwo60k6NDPjU_KgTskcPU4A-UvRiaw"
 RENDER_URL = "https://my-bot-hrqm.onrender.com" 
 
 ALLOWED_ADMINS = ['sahar143', 'OYB1234']
-REACTIONS = ['⚡', '❤️‍🔥', '💯', '🔥', '💎']
+REACTIONS = ['⚡', '❤️‍🔥', '💯', '🔥',]
 current_index = 0
 
 bot = telebot.TeleBot(BOT_TOKEN)
