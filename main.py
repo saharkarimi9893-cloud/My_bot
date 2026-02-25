@@ -14,7 +14,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 app = Flask(__name__)
 
 # لیست کامل محتواها طبق درخواست شما
-ALL_TYPES = ['photo', 'video', 'sticker', 'audio', 'animation', 'text', 'voice', 'video_note']
+ALL_TYPES = ['photo', 'video', 'sticker', 'audio', 'animation', 'text', 'voice', 'story', 'video_note']
 
 @app.route('/')
 def home(): 
